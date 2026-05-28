@@ -1,9 +1,7 @@
+import Scene from './components/Scene'
+
 function App() {
-  return (
-    <main className="app">
-      <h1>Rohit&apos;s Journey</h1>
-    </main>
-  )
+  return <Scene />
 }
 
 export default App
