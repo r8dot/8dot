@@ -1,9 +1,13 @@
+import { RigidBody } from '@react-three/rapier'
+
 function Terrain() {
   return (
-    <mesh rotation={[-Math.PI / 2, 0, 0]} position={[0, -0.1, 0]}>
-      <planeGeometry args={[200, 200]} />
-      <meshStandardMaterial color="#2D5016" />
-    </mesh>
+    <RigidBody type="fixed" colliders="cuboid">
+      <mesh position={[44, -1, -20]} castShadow={false} receiveShadow={true}>
+        <boxGeometry args={[600, 2, 600]} />
+        <meshStandardMaterial color="#5C8A3C" />
+      </mesh>
+    </RigidBody>
   )
 }
 

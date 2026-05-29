@@ -1,18 +1,84 @@
 import { Canvas } from '@react-three/fiber'
+import { Physics } from '@react-three/rapier'
+import { AnimatePresence } from 'framer-motion'
+import Player from './Player/Player'
+import SainikSchool from './Zones/SainikSchool'
+import KochiUndergrad from './Zones/KochiUndergrad'
+import Station from './Stations/Station'
+import Panel from './UI/Panel'
+import Lighting from './World/Lighting'
 import Terrain from './World/Terrain'
 import WorldFog from './World/Fog'
 import WorldSky from './World/Sky'
+import PostProcessing from './World/PostProcessing'
+import zonesData from '../content/zones.json'
+import { useUIStore } from '../store/uiStore'
 
-const FOG_COLOR = '#C8D4D0'
+const FOG_COLOR = '#F5C99A'
+const STATION_COLORS = ['#D4A84B', '#2D5016', '#C4714A', '#1A2744', '#7A9E5C', '#8BA3B5']
+
+type Zone = {
+  id: string
+  title: string
+  subtitle: string
+  position: [number, number, number]
+  content: string
+}
 
 function Scene() {
+  const zones = zonesData.zones as Zone[]
+  const activePanel = useUIStore((state) => state.activePanel)
+  const openPanel = useUIStore((state) => state.openPanel)
+  const closePanel = useUIStore((state) => state.closePanel)
+  const activeZone = zones.find((zone) => zone.id === activePanel) ?? null
+
   return (
-    <Canvas camera={{ position: [0, 6, 16], fov: 55 }}>
-      <color attach="background" args={[FOG_COLOR]} />
-      <WorldFog color={FOG_COLOR} near={18} far={70} />
-      <WorldSky />
-      <Terrain />
-    </Canvas>
+    <>
+      <Canvas
+        camera={{ fov: 75, near: 0.1, far: 500 }}
+        style={{ width: '100vw', height: '100vh' }}
+      >
+        <color attach="background" args={[FOG_COLOR]} />
+        <WorldFog />
+        <Lighting />
+        <WorldSky />
+        <PostProcessing />
+        <Physics timeStep="vary" updateLoop="follow">
+          <Terrain />
+          <Player />
+          {zones.map((zone, index) => (
+            <Station
+              key={zone.id}
+              id={zone.id}
+              position={zone.position}
+              radius={5}
+              promptLabel={zone.subtitle}
+              onActivate={() => openPanel(zone.id)}
+            >
+              {zone.id === 'sainik-school' ? (
+                <SainikSchool />
+              ) : zone.id === 'kochi-undergrad' ? (
+                <KochiUndergrad />
+              ) : (
+                <mesh position={[0, 1, 0]}>
+                  <boxGeometry args={[1.5, 1.5, 1.5]} />
+                  <meshStandardMaterial color={STATION_COLORS[index % STATION_COLORS.length]} />
+                </mesh>
+              )}
+            </Station>
+          ))}
+        </Physics>
+      </Canvas>
+      <AnimatePresence>
+        {activeZone ? (
+          <Panel
+            title={activeZone.title}
+            content={activeZone.content}
+            onClose={closePanel}
+          />
+        ) : null}
+      </AnimatePresence>
+    </>
   )
 }
 

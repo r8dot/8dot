@@ -1,3 +1,46 @@
 {
-  "zones": []
+  "zones": [
+    {
+      "id": "sainik-school",
+      "title": "Sainik School, Kazhakootam",
+      "subtitle": "Where it all began",
+      "position": [0, 0, -18],
+      "content": "This is where most of my habits came from.\n\nI grew up at Sainik School Kazhakootam in Kerala. Early mornings, PT sessions, drills, inspections, hostel life, packed schedules. After a point it just becomes normal. You stop thinking too much and learn to keep moving.\n\nFitness was a huge part of life there. Long runs, basketball, cross country, endless practice sessions. I spent most of those years either on a court, a ground or running somewhere.\n\nI also earned my NCC C Certificate here — one of those things that sounds small on paper but actually meant a lot of early mornings and a lot of showing up.\n\nThat environment shaped a lot of my attitude towards things. You learn consistency without somebody having to constantly remind you. You learn how to work in teams, how to compete properly, how to deal with pressure, and also how much easier difficult things become when the people around you are going through it with you.\n\nThat camaraderie stays with you.\n\nLooking back now, I probably took a lot of it for granted at the time. But most of the discipline and mindset I carry today started here."
+    },
+    {
+      "id": "kochi-undergrad",
+      "title": "Kochi — St. Paul's College",
+      "subtitle": "Figuring people out",
+      "position": [16, 0, -30],
+      "content": "I stayed in Kochi for undergrad and studied at St. Paul's College, Kalamassery.\n\nA lot of my learning during those years happened outside college. Kochi is one of those cities where you keep running into different kinds of people and different ways of living. Tech parks, local shops, metro stations, cafes, late-night food spots, random conversations. You end up observing people without even realizing it.\n\nThis was also the phase where I started getting genuinely curious about why people behave the way they do.\n\nNot in a textbook sense. Just everyday things. Why some ideas connect naturally. Why certain places feel alive. Why people trust some things instantly and ignore others completely.\n\nI spent a lot of time going through campaigns, videos, internet trends, comment sections and random rabbit holes online. Not because I was trying to study marketing seriously at that point. I just found people interesting.\n\nThat curiosity slowly turned into the path I'm on now."
+    },
+    {
+      "id": "pune",
+      "title": "Pune — MBA at Symbiosis",
+      "subtitle": "Everything moving fast",
+      "position": [34, 0, -42],
+      "content": "Then came Pune — the one time I properly left Kerala.\n\nFirst time living somewhere completely different, completely on my own. New city, no familiar faces, no backwaters, no family nearby. Just a hostel room, a schedule and a lot of new people.\n\nHonestly, I loved that phase.\n\nI interned at four places during this time — each completely different.\n\nAt DDNRMC, a Kerala-based laboratory, I worked on repositioning their EECP therapy communication from a medical narrative toward a preventive-wellness angle, and managed B2B outreach with doctors and clinic partners.\n\nAt OYO, I was doing corporate sales in Bangalore — outbound calls, field visits, full sales cycle from prospecting to closure.\n\nAt Airtel, I supported digital acquisition campaigns across paid search and social, worked on CRM analytics and created campaign assets for acquisition and engagement.\n\nAt Chipo, I supported B2B retail expansion across Kerala and contributed to institutional partnerships with IRCTC and Casino Catering for Vande Bharat routes.\n\nI also served as Branding and Admissions Coordinator at Symbiosis — running the institute's student-facing brand and recruitment communications.\n\nThe case competitions were probably my favourite part of the MBA though. Winning at IIM Kozhikode, IIM Rohtak, IIM Sirmaur and SPJIMR — there's something really fun about sitting with a team for 48 hours trying to solve one difficult problem properly.\n\nThat phase gave me clarity on the kind of work I enjoy most. Building things, solving problems and seeing ideas actually move."
+    },
+    {
+      "id": "kochi-now",
+      "title": "Kochi — Present Day",
+      "subtitle": "Axis Bank & what's next",
+      "position": [54, 0, -34],
+      "content": "Now I'm back in Kochi working at Axis Bank as a Sales Manager in auto loan acquisition.\n\nI manage the full sales cycle across a 12-branch territory — dealer networks, DSA channels, HNI, NRI and referral segments. Consistently hitting 100–115% of monthly targets, managing a Rs.3.5 Cr+ active pipeline, leading a team of 6 off-roll executives.\n\nTechnically it's a sales role. But underneath it's a lot of funnels, conversion tracking, customer profiling, pipeline dashboards, figuring out why certain segments convert and others don't. The more I work, the more I realize sales and marketing overlap much more than people think.\n\nRight now this feels like an in-between phase, and I'm honestly fine with that. This role is teaching me how people actually make decisions in real life — outside presentations and case studies.\n\nLong term, I see myself moving into branding and marketing roles — the kind of work where strategy, storytelling and consumer behaviour all come together.\n\nIf you're here because you're hiring for something like that, let's talk."
+    },
+    {
+      "id": "munnar",
+      "title": "Munnar",
+      "subtitle": "The quieter parts",
+      "position": [72, 0, -20],
+      "content": "This part has nothing to do with work.\n\nI like shooting photos and videos whenever I get the chance. Mostly Kerala, mostly nature, mostly moments I don't want to forget later.\n\nMunnar is one of my favourite places to disappear for a few days. Something about the mountains makes everything slow down a little. You come back quieter in a good way.\n\nApart from that, it's mostly basketball, Formula 1, long drives, music and trying to document life properly once in a while.\n\nI think everyone needs a space that has nothing to do with achievement.\n\nThis is probably mine."
+    },
+    {
+      "id": "beach",
+      "title": "The Beach",
+      "subtitle": "About me & reach out",
+      "position": [88, 0, -6],
+      "content": "Hey, I'm Rohit.\n\nKerala kid, basically. Sainik School, undergrad in Kochi, one MBA chapter in Pune, and then back to Kerala again. This place keeps pulling me back and honestly I've stopped questioning it.\n\nI made this portfolio because normal resumes started feeling too flat. They tell you where someone studied and worked but they don't really tell you much about the person behind it. This world is my attempt at showing that side properly.\n\nEvery zone here is a phase that shaped me — some about discipline, some about curiosity, some about figuring things out in real time. If you walked through all of it, you probably know me better than most people who've only seen my LinkedIn.\n\nI'm open to conversations about branding, marketing, growth and creative work. Also happy to just talk — about F1, basketball, Kerala, watches or honestly anything interesting.\n\nFind me at rohitgireesh.com or reach out on LinkedIn. I reply.\n\nGlad you made it till the end."
+    }
+  ]
 }
