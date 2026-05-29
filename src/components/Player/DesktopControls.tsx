@@ -5,107 +5,115 @@ import * as THREE from 'three'
 import { PLAYER } from '../../lib/constants'
 import { usePlayerStore } from '../../store/playerStore'
 
-type Props = { playerRef: { current: RapierRigidBody | null } }
-
-const KEYS: Record<string, string> = {
-  KeyW: 'f', KeyS: 'b', KeyA: 'l', KeyD: 'r'
+type Props = {
+  playerRef: { current: RapierRigidBody | null }
+  meshRef: { current: THREE.Group | null }
 }
 
-export default function DesktopControls({ playerRef }: Props) {
-  const { camera, gl } = useThree()
+const CAM_LERP = 0.08
+
+export default function DesktopControls({ playerRef, meshRef }: Props) {
+  const { camera } = useThree()
   const setPlayerPosition = usePlayerStore(s => s.setPlayerPosition)
-  const locked = useRef(false)
-  const yaw = useRef(0)
-  const pitch = useRef(0)
-  const keys = useRef({ f: false, b: false, l: false, r: false })
-  const euler = useRef(new THREE.Euler(0, 0, 0, 'YXZ'))
-  const fwd = useRef(new THREE.Vector3())
-  const rgt = useRef(new THREE.Vector3())
-  const vel = useRef(new THREE.Vector3())
+  const keys = useRef({ w: false, s: false, a: false, d: false })
+  const camTarget = useRef(new THREE.Vector3(0, 18, 14))
+  const lookTarget = useRef(new THREE.Vector3())
+  const zoomRef = useRef(1.0)
+  const isRightDragging = useRef(false)
+  const orbitAngle = useRef(0)
+  const lastMouseX = useRef(0)
 
   useEffect(() => {
-    // Set camera to spawn position looking forward
-    camera.position.set(
-      PLAYER.spawn[0],
-      PLAYER.spawn[1] + PLAYER.eyeHeight,
-      PLAYER.spawn[2]
-    )
-    camera.rotation.set(0, Math.PI, 0) // face negative Z
-    yaw.current = Math.PI
-    pitch.current = 0
+    camera.position.set(0, 18, 14)
+    camera.lookAt(0, 0, 0)
 
-    const lock = () => gl.domElement.requestPointerLock()
-    const onLockChange = () => {
-      locked.current = document.pointerLockElement === gl.domElement
-    }
-    const onMouse = (e: MouseEvent) => {
-      if (!locked.current) return
-      yaw.current -= e.movementX * 0.002
-      pitch.current = Math.max(-1.2, Math.min(1.2,
-        pitch.current - e.movementY * 0.002))
-    }
     const onKeyDown = (e: KeyboardEvent) => {
-      const k = KEYS[e.code]
-      if (k) keys.current[k as keyof typeof keys.current] = true
+      if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.current.w = true
+      if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.current.s = true
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.current.a = true
+      if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = true
     }
     const onKeyUp = (e: KeyboardEvent) => {
-      const k = KEYS[e.code]
-      if (k) keys.current[k as keyof typeof keys.current] = false
+      if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.current.w = false
+      if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.current.s = false
+      if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.current.a = false
+      if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = false
     }
+    const onWheel = (e: WheelEvent) => {
+      zoomRef.current = Math.max(0.5, Math.min(2.5, zoomRef.current + e.deltaY * 0.001))
+    }
+    const onMouseDown = (e: MouseEvent) => {
+      if (e.button === 2) {
+        isRightDragging.current = true
+        lastMouseX.current = e.clientX
+      }
+    }
+    const onMouseUp = (e: MouseEvent) => {
+      if (e.button === 2) isRightDragging.current = false
+    }
+    const onMouseMove = (e: MouseEvent) => {
+      if (!isRightDragging.current) return
+      const delta = e.clientX - lastMouseX.current
+      orbitAngle.current += delta * 0.01
+      lastMouseX.current = e.clientX
+    }
+    const onContextMenu = (e: Event) => e.preventDefault()
 
-    gl.domElement.addEventListener('click', lock)
-    document.addEventListener('pointerlockchange', onLockChange)
-    document.addEventListener('mousemove', onMouse)
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
-
+    window.addEventListener('wheel', onWheel)
+    window.addEventListener('mousedown', onMouseDown)
+    window.addEventListener('mouseup', onMouseUp)
+    window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('contextmenu', onContextMenu)
     return () => {
-      gl.domElement.removeEventListener('click', lock)
-      document.removeEventListener('pointerlockchange', onLockChange)
-      document.removeEventListener('mousemove', onMouse)
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
+      window.removeEventListener('wheel', onWheel)
+      window.removeEventListener('mousedown', onMouseDown)
+      window.removeEventListener('mouseup', onMouseUp)
+      window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('contextmenu', onContextMenu)
     }
-  }, [camera, gl])
+  }, [camera])
 
   useFrame(() => {
     const body = playerRef.current
     if (!body) return
 
-    // Apply rotation
-    euler.current.set(pitch.current, yaw.current, 0)
-    camera.quaternion.setFromEuler(euler.current)
+    const move = new THREE.Vector3()
+    if (keys.current.w) move.z -= 1
+    if (keys.current.s) move.z += 1
+    if (keys.current.a) move.x -= 1
+    if (keys.current.d) move.x += 1
 
-    // Get directions
-    camera.getWorldDirection(fwd.current)
-    fwd.current.y = 0
-    fwd.current.normalize()
-    rgt.current.crossVectors(new THREE.Vector3(0,1,0), fwd.current)
-
-    // Build move vector
-    vel.current.set(0, 0, 0)
-    const k = keys.current
-    if (k.f) vel.current.addScaledVector(fwd.current, 1)
-    if (k.b) vel.current.addScaledVector(fwd.current, -1)
-    if (k.r) vel.current.addScaledVector(rgt.current, -1)
-    if (k.l) vel.current.addScaledVector(rgt.current, 1)
-
-    if (vel.current.lengthSq() > 0) {
-      vel.current.normalize().multiplyScalar(PLAYER.moveSpeed)
+    if (move.lengthSq() > 0) {
+      move.normalize().multiplyScalar(PLAYER.moveSpeed)
+      if (meshRef.current) {
+        const targetAngle = Math.atan2(move.x, move.z)
+        meshRef.current.rotation.y = targetAngle
+      }
     }
 
-    const current = body.linvel()
-    body.setLinvel(
-      { x: vel.current.x, y: current.y, z: vel.current.z },
-      true
-    )
+    const vel = body.linvel()
+    body.setLinvel({ x: move.x, y: vel.y, z: move.z }, true)
 
-    // Sync camera to body
     const pos = body.translation()
-    camera.position.set(pos.x, pos.y + PLAYER.eyeHeight, pos.z)
+    const zoom = zoomRef.current
+    const angle = orbitAngle.current
+
+    const offsetX = Math.sin(angle) * 14 * zoom
+    const offsetZ = Math.cos(angle) * 14 * zoom
+    const offsetY = 18 * zoom
+
+    camTarget.current.set(pos.x + offsetX, pos.y + offsetY, pos.z + offsetZ)
+    camera.position.lerp(camTarget.current, CAM_LERP)
+
+    lookTarget.current.set(pos.x, pos.y + 1, pos.z)
+    camera.lookAt(lookTarget.current)
+
     setPlayerPosition({ x: pos.x, y: pos.y, z: pos.z })
   })
 
   return null
 }
-
