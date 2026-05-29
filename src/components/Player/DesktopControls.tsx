@@ -8,13 +8,15 @@ import { usePlayerStore } from '../../store/playerStore'
 type Props = {
   playerRef: { current: RapierRigidBody | null }
   meshRef: { current: THREE.Group | null }
+  onAnimationChange: (type: 'idle' | 'walk' | 'run') => void
 }
 
-export default function DesktopControls({ playerRef, meshRef }: Props) {
+export default function DesktopControls({ playerRef, meshRef, onAnimationChange }: Props) {
   const { camera, gl } = useThree()
   const setPlayerPosition = usePlayerStore(s => s.setPlayerPosition)
 
   const keys = useRef({ w: false, s: false, a: false, d: false })
+  const isShift = useRef(false)
   const orbitAngle = useRef(0)
   const orbitPitch = useRef(0.8)
   const zoomRef = useRef(20)
@@ -32,12 +34,14 @@ export default function DesktopControls({ playerRef, meshRef }: Props) {
       if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.current.s = true
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.current.a = true
       if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = true
+      if (e.code === 'ShiftLeft') isShift.current = true
     }
     const onKeyUp = (e: KeyboardEvent) => {
       if (e.code === 'KeyW' || e.code === 'ArrowUp') keys.current.w = false
       if (e.code === 'KeyS' || e.code === 'ArrowDown') keys.current.s = false
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.current.a = false
       if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = false
+      if (e.code === 'ShiftLeft') isShift.current = false
     }
     const onMouseDown = (e: MouseEvent) => {
       isDragging.current = true
@@ -86,13 +90,11 @@ export default function DesktopControls({ playerRef, meshRef }: Props) {
 
     const k = keys.current
     const angle = orbitAngle.current
+    const moving = k.w || k.s || k.a || k.d
 
-    // Movement relative to camera angle
     const move = new THREE.Vector3()
-    const forward = new THREE.Vector3(
-      -Math.sin(angle), 0, -Math.cos(angle))
-    const right = new THREE.Vector3(
-      Math.cos(angle), 0, -Math.sin(angle))
+    const forward = new THREE.Vector3(-Math.sin(angle), 0, -Math.cos(angle))
+    const right = new THREE.Vector3(Math.cos(angle), 0, -Math.sin(angle))
 
     if (k.w) move.addScaledVector(forward, 1)
     if (k.s) move.addScaledVector(forward, -1)
@@ -100,21 +102,25 @@ export default function DesktopControls({ playerRef, meshRef }: Props) {
     if (k.d) move.addScaledVector(right, 1)
 
     if (move.lengthSq() > 0) {
-      move.normalize().multiplyScalar(PLAYER.moveSpeed)
+      const speed = isShift.current
+        ? PLAYER.moveSpeed * 1.8
+        : PLAYER.moveSpeed
+      move.normalize().multiplyScalar(speed)
       if (meshRef.current) {
         const targetAngle = Math.atan2(move.x, move.z)
         meshRef.current.rotation.y = targetAngle
       }
+      onAnimationChange(isShift.current ? 'run' : 'walk')
+    } else {
+      onAnimationChange('idle')
     }
 
     const vel = body.linvel()
-    body.setLinvel(
-      { x: move.x, y: vel.y, z: move.z }, true)
+    body.setLinvel({ x: move.x, y: vel.y, z: move.z }, true)
 
     const pos = body.translation()
     setPlayerPosition({ x: pos.x, y: pos.y, z: pos.z })
 
-    // Orbit camera
     const zoom = zoomRef.current
     const pitch = orbitPitch.current
     const camX = pos.x + zoom * Math.sin(angle) * Math.cos(pitch)
