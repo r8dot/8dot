@@ -10,21 +10,21 @@ type Props = {
   meshRef: { current: THREE.Group | null }
 }
 
-const CAM_LERP = 0.08
-
 export default function DesktopControls({ playerRef, meshRef }: Props) {
-  const { camera } = useThree()
+  const { camera, gl } = useThree()
   const setPlayerPosition = usePlayerStore(s => s.setPlayerPosition)
+
   const keys = useRef({ w: false, s: false, a: false, d: false })
-  const camTarget = useRef(new THREE.Vector3(0, 18, 14))
-  const lookTarget = useRef(new THREE.Vector3())
-  const zoomRef = useRef(1.0)
-  const isRightDragging = useRef(false)
   const orbitAngle = useRef(0)
-  const lastMouseX = useRef(0)
+  const orbitPitch = useRef(0.8)
+  const zoomRef = useRef(20)
+  const isDragging = useRef(false)
+  const lastMouse = useRef({ x: 0, y: 0 })
+  const camPos = useRef(new THREE.Vector3(0, 20, 20))
+  const lookAt = useRef(new THREE.Vector3())
 
   useEffect(() => {
-    camera.position.set(0, 18, 14)
+    camera.position.set(0, 20, 20)
     camera.lookAt(0, 0, 0)
 
     const onKeyDown = (e: KeyboardEvent) => {
@@ -39,53 +39,65 @@ export default function DesktopControls({ playerRef, meshRef }: Props) {
       if (e.code === 'KeyA' || e.code === 'ArrowLeft') keys.current.a = false
       if (e.code === 'KeyD' || e.code === 'ArrowRight') keys.current.d = false
     }
-    const onWheel = (e: WheelEvent) => {
-      zoomRef.current = Math.max(0.5, Math.min(2.5, zoomRef.current + e.deltaY * 0.001))
-    }
     const onMouseDown = (e: MouseEvent) => {
-      if (e.button === 2) {
-        isRightDragging.current = true
-        lastMouseX.current = e.clientX
-      }
+      isDragging.current = true
+      lastMouse.current = { x: e.clientX, y: e.clientY }
     }
-    const onMouseUp = (e: MouseEvent) => {
-      if (e.button === 2) isRightDragging.current = false
+    const onMouseUp = () => {
+      isDragging.current = false
     }
     const onMouseMove = (e: MouseEvent) => {
-      if (!isRightDragging.current) return
-      const delta = e.clientX - lastMouseX.current
-      orbitAngle.current += delta * 0.01
-      lastMouseX.current = e.clientX
+      if (!isDragging.current) return
+      const dx = e.clientX - lastMouse.current.x
+      const dy = e.clientY - lastMouse.current.y
+      orbitAngle.current -= dx * 0.008
+      orbitPitch.current = Math.max(0.2,
+        Math.min(1.4, orbitPitch.current + dy * 0.005))
+      lastMouse.current = { x: e.clientX, y: e.clientY }
+    }
+    const onWheel = (e: WheelEvent) => {
+      zoomRef.current = Math.max(8,
+        Math.min(50, zoomRef.current + e.deltaY * 0.05))
     }
     const onContextMenu = (e: Event) => e.preventDefault()
 
     window.addEventListener('keydown', onKeyDown)
     window.addEventListener('keyup', onKeyUp)
-    window.addEventListener('wheel', onWheel)
-    window.addEventListener('mousedown', onMouseDown)
+    gl.domElement.addEventListener('mousedown', onMouseDown)
     window.addEventListener('mouseup', onMouseUp)
     window.addEventListener('mousemove', onMouseMove)
+    window.addEventListener('wheel', onWheel)
     window.addEventListener('contextmenu', onContextMenu)
+
     return () => {
       window.removeEventListener('keydown', onKeyDown)
       window.removeEventListener('keyup', onKeyUp)
-      window.removeEventListener('wheel', onWheel)
-      window.removeEventListener('mousedown', onMouseDown)
+      gl.domElement.removeEventListener('mousedown', onMouseDown)
       window.removeEventListener('mouseup', onMouseUp)
       window.removeEventListener('mousemove', onMouseMove)
+      window.removeEventListener('wheel', onWheel)
       window.removeEventListener('contextmenu', onContextMenu)
     }
-  }, [camera])
+  }, [camera, gl])
 
   useFrame(() => {
     const body = playerRef.current
     if (!body) return
 
+    const k = keys.current
+    const angle = orbitAngle.current
+
+    // Movement relative to camera angle
     const move = new THREE.Vector3()
-    if (keys.current.w) move.z -= 1
-    if (keys.current.s) move.z += 1
-    if (keys.current.a) move.x -= 1
-    if (keys.current.d) move.x += 1
+    const forward = new THREE.Vector3(
+      -Math.sin(angle), 0, -Math.cos(angle))
+    const right = new THREE.Vector3(
+      Math.cos(angle), 0, -Math.sin(angle))
+
+    if (k.w) move.addScaledVector(forward, 1)
+    if (k.s) move.addScaledVector(forward, -1)
+    if (k.a) move.addScaledVector(right, -1)
+    if (k.d) move.addScaledVector(right, 1)
 
     if (move.lengthSq() > 0) {
       move.normalize().multiplyScalar(PLAYER.moveSpeed)
@@ -96,23 +108,24 @@ export default function DesktopControls({ playerRef, meshRef }: Props) {
     }
 
     const vel = body.linvel()
-    body.setLinvel({ x: move.x, y: vel.y, z: move.z }, true)
+    body.setLinvel(
+      { x: move.x, y: vel.y, z: move.z }, true)
 
     const pos = body.translation()
-    const zoom = zoomRef.current
-    const angle = orbitAngle.current
-
-    const offsetX = Math.sin(angle) * 14 * zoom
-    const offsetZ = Math.cos(angle) * 14 * zoom
-    const offsetY = 18 * zoom
-
-    camTarget.current.set(pos.x + offsetX, pos.y + offsetY, pos.z + offsetZ)
-    camera.position.lerp(camTarget.current, CAM_LERP)
-
-    lookTarget.current.set(pos.x, pos.y + 1, pos.z)
-    camera.lookAt(lookTarget.current)
-
     setPlayerPosition({ x: pos.x, y: pos.y, z: pos.z })
+
+    // Orbit camera
+    const zoom = zoomRef.current
+    const pitch = orbitPitch.current
+    const camX = pos.x + zoom * Math.sin(angle) * Math.cos(pitch)
+    const camY = pos.y + zoom * Math.sin(pitch)
+    const camZ = pos.z + zoom * Math.cos(angle) * Math.cos(pitch)
+
+    camPos.current.set(camX, camY, camZ)
+    camera.position.lerp(camPos.current, 0.1)
+
+    lookAt.current.set(pos.x, pos.y + 1, pos.z)
+    camera.lookAt(lookAt.current)
   })
 
   return null
