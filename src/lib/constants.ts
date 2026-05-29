@@ -1,7 +1,7 @@
 export const PLAYER = {
-  spawn: [0, 2, 5] as const,
+  spawn: [0, 8, 0] as const,
   eyeHeight: 1.7,
-  moveSpeed: 5,
+  moveSpeed: 8,
   capsuleRadius: 0.35,
   capsuleHalfHeight: 0.45,
   minPolarAngle: Math.PI * 0.1,

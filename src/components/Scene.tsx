@@ -10,11 +10,15 @@ import Lighting from './World/Lighting'
 import Terrain from './World/Terrain'
 import WorldFog from './World/Fog'
 import WorldSky from './World/Sky'
+import Roads from './World/Roads'
+import Trees from './World/Trees'
+import Shops from './World/Shops'
+import Sea from './World/Sea'
 import PostProcessing from './World/PostProcessing'
 import zonesData from '../content/zones.json'
 import { useUIStore } from '../store/uiStore'
 
-const FOG_COLOR = '#F5C99A'
+const BACKGROUND_COLOR = '#2A1A3E'
 const STATION_COLORS = ['#D4A84B', '#2D5016', '#C4714A', '#1A2744', '#7A9E5C', '#8BA3B5']
 
 type Zone = {
@@ -35,10 +39,10 @@ function Scene() {
   return (
     <>
       <Canvas
-        camera={{ fov: 75, near: 0.1, far: 500 }}
+        camera={{ position: [0, 15, 30], fov: 70, near: 0.1, far: 800 }}
         style={{ width: '100vw', height: '100vh' }}
       >
-        <color attach="background" args={[FOG_COLOR]} />
+        <color attach="background" args={[BACKGROUND_COLOR]} />
         <WorldFog />
         <Lighting />
         <WorldSky />
@@ -46,6 +50,10 @@ function Scene() {
         <Physics timeStep="vary" updateLoop="follow">
           <Terrain />
           <Player />
+          <Roads />
+          <Trees />
+          <Shops />
+          <Sea />
           {zones.map((zone, index) => (
             <Station
               key={zone.id}
