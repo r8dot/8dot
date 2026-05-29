@@ -1,6 +1,7 @@
 import { Canvas } from '@react-three/fiber'
 import { Physics } from '@react-three/rapier'
 import { AnimatePresence } from 'framer-motion'
+import { Suspense } from 'react'
 import Player from './Player/Player'
 import SainikSchool from './Zones/SainikSchool'
 import KochiUndergrad from './Zones/KochiUndergrad'
@@ -47,7 +48,9 @@ function Scene() {
         <PostProcessing />
         <Physics timeStep="vary" updateLoop="follow">
           <Terrain />
-          <Player />
+          <Suspense fallback={null}>
+            <Player />
+          </Suspense>
           <Roads />
           <Trees />
           <Shops />
