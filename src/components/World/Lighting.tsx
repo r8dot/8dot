@@ -1,25 +1,29 @@
-function Lighting() {
+export default function Lighting() {
   return (
     <>
+      {/* Main sun — low western horizon, warm but not overpowering */}
       <directionalLight
-        color="#FF6B35"
-        intensity={1.5}
-        position={[-80, 20, 30]}
+        color="#FFB347"
+        intensity={0.9}
+        position={[-100, 30, 50]}
         castShadow
         shadow-mapSize-width={1024}
         shadow-mapSize-height={1024}
-        shadow-camera-far={200}
+        shadow-camera-far={300}
+        shadow-camera-left={-150}
+        shadow-camera-right={150}
+        shadow-camera-top={150}
+        shadow-camera-bottom={-150}
       />
+      {/* Strong ambient so nothing goes fully dark */}
+      <ambientLight color="#C8B8A8" intensity={1.0} />
+      {/* Cool blue fill from east — balances warm sun */}
       <directionalLight
-        color="#FF9B6B"
-        intensity={0.6}
-        position={[80, 40, -30]}
+        color="#7090B0"
+        intensity={0.5}
+        position={[100, 40, -50]}
         castShadow={false}
       />
-      <ambientLight color="#8B6DB5" intensity={0.8} />
-      <hemisphereLight color="#FF8B6B" groundColor="#4a7c2f" intensity={0.6} />
     </>
   )
 }
-
-export default Lighting
